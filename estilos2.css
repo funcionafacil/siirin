@@ -1,0 +1,295 @@
+/* ============================================================
+   SIRIIN V2 - Estilos con soporte para voz contextual
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #f4f4f4;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: #0057b8;
+  color: white;
+  padding: 1.5em;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+header h1 {
+  font-size: 2em;
+  margin-bottom: 0.3em;
+}
+
+header p {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+main {
+  flex: 1;
+  padding: 2em;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+section {
+  background: white;
+  border-radius: 12px;
+  padding: 2em;
+  margin-bottom: 2em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+section h2 {
+  color: #0057b8;
+  margin-bottom: 1em;
+  font-size: 1.3em;
+}
+
+/* ============================================================
+   Escáner QR
+   ============================================================ */
+#reader {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.estado {
+  text-align: center;
+  margin-top: 1em;
+  color: #666;
+  font-size: 1em;
+  transition: color 0.3s ease;
+}
+
+.estado.exito {
+  color: #1b8a3a;
+  font-weight: bold;
+}
+
+.estado.error {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+/* ============================================================
+   Sección del perfil
+   ============================================================ */
+.oculto {
+  display: none;
+}
+
+#perfilContenido {
+  padding: 1.5em;
+  border-radius: 12px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Encabezado tipo tarjeta: foto + nombre + condición */
+.perfil-encabezado {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  margin-bottom: 1.5em;
+  padding-bottom: 1.5em;
+  border-bottom: 2px solid rgba(0,0,0,0.15);
+  flex-wrap: wrap;
+}
+
+.perfil-encabezado .foto-circular {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255,255,255,0.85);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.perfil-encabezado .datos {
+  flex: 1;
+  min-width: 200px;
+}
+
+.perfil-encabezado .datos h2 {
+  font-size: 2em;
+  margin: 0 0 0.3em 0;
+  color: inherit;
+  line-height: 1.1;
+}
+
+.perfil-encabezado .datos .condicion {
+  display: inline-block;
+  background: rgba(0,0,0,0.15);
+  padding: 0.4em 1em;
+  border-radius: 20px;
+  font-size: 0.95em;
+  font-weight: 600;
+}
+
+/* Detalle del perfil */
+#perfilContenido .detalle {
+  line-height: 1.6;
+  font-size: 1em;
+  margin-bottom: 1.5em;
+}
+
+#perfilContenido .detalle strong {
+  display: block;
+  margin-top: 1em;
+  font-size: 1.05em;
+  color: inherit;
+  opacity: 0.95;
+}
+
+/* ============================================================
+   Botones
+   ============================================================ */
+#perfilContenido button {
+  background: #0057b8;
+  color: white;
+  border: none;
+  padding: 0.8em 1.5em;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-right: 0.5em;
+  margin-top: 0.5em;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#perfilContenido button:hover {
+  background: #004099;
+}
+
+#perfilContenido button:active {
+  transform: scale(0.97);
+}
+
+/* Botón de voz */
+.boton-voz {
+  background: #1b8a3a !important;
+  font-weight: 600;
+}
+
+.boton-voz:hover {
+  background: #146b2b !important;
+}
+
+.boton-voz.activo {
+  background: #d32f2f !important;
+}
+
+.boton-voz.activo:hover {
+  background: #b71c1c !important;
+}
+
+/* Botón de voz discreto (para condición "opcional") */
+.boton-voz.discreto {
+  background: rgba(0,0,0,0.15) !important;
+  color: inherit !important;
+  font-size: 0.9em !important;
+  padding: 0.5em 1em !important;
+}
+
+.boton-voz.discreto:hover {
+  background: rgba(0,0,0,0.25) !important;
+}
+
+/* Indicador de voz activa */
+.indicador-voz {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: 0.8em;
+  padding: 0.4em 0.9em;
+  background: rgba(0,0,0,0.1);
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.indicador-voz .punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1b8a3a;
+  animation: pulso 1.2s infinite;
+}
+
+@keyframes pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ============================================================
+   Ruta visual
+   ============================================================ */
+#rutaVisual {
+  margin-top: 1.5em;
+}
+
+#rutaVisual h3 {
+  margin-bottom: 0.5em;
+  color: inherit;
+}
+
+#rutaVisual img {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+footer {
+  text-align: center;
+  padding: 1em;
+  color: #888;
+  font-size: 0.85em;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 600px) {
+  main {
+    padding: 1em;
+  }
+  section {
+    padding: 1.5em;
+  }
+  header h1 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 500px) {
+  .perfil-encabezado {
+    flex-direction: column;
+    text-align: center;
+    gap: 1em;
+  }
+  .perfil-encabezado .foto-circular {
+    width: 100px;
+    height: 100px;
+  }
+  .perfil-encabezado .datos h2 {
+    font-size: 1.5em;
+  }
+}

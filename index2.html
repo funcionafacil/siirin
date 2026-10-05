@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIRIIN V2 - Kiosco con Voz</title>
+  <link rel="stylesheet" href="estilos2.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  <header>
+    <h1>🧍‍♀️ SIRIIN V2</h1>
+    <p>Sistema de Reconocimiento e Identificación Inclusiva</p>
+  </header>
+
+  <main>
+    <!-- Sección del escáner -->
+    <section id="seccionEscaner">
+      <h2>📷 Escanea tu carné</h2>
+      <div id="reader"></div>
+      <p id="mensajeEstado" class="estado">Acerca tu código QR a la cámara</p>
+    </section>
+
+    <!-- Sección del perfil -->
+    <section id="seccionPerfil" class="oculto">
+      <div id="perfilContenido"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>SENA · Centro de Formación · Sistema SIRIIN V2</p>
+  </footer>
+
+  <script src="app2.js"></script>
+</body>
+</html>
