@@ -1,3 +1,7 @@
+/* ============================================================
+   SIRIIN - Estilos del Kiosco de Identificación Inclusiva
+   ============================================================ */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -52,7 +56,9 @@ section h2 {
   font-size: 1.3em;
 }
 
-/* Escáner QR */
+/* ============================================================
+   Escáner QR
+   ============================================================ */
 #reader {
   width: 100%;
   max-width: 400px;
@@ -66,6 +72,7 @@ section h2 {
   margin-top: 1em;
   color: #666;
   font-size: 1em;
+  transition: color 0.3s ease;
 }
 
 .estado.exito {
@@ -78,7 +85,9 @@ section h2 {
   font-weight: bold;
 }
 
-/* Perfil */
+/* ============================================================
+   Sección del perfil
+   ============================================================ */
 .oculto {
   display: none;
 }
@@ -86,24 +95,53 @@ section h2 {
 #perfilContenido {
   padding: 1.5em;
   border-radius: 12px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-#perfilContenido h2 {
-  font-size: 1.8em;
-  margin-bottom: 0.5em;
-  color: #222;
+/* Encabezado tipo tarjeta: foto + nombre + condición */
+.perfil-encabezado {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  margin-bottom: 1.5em;
+  padding-bottom: 1.5em;
+  border-bottom: 2px solid rgba(0,0,0,0.15);
+  flex-wrap: wrap;
 }
 
-#perfilContenido .condicion {
+.perfil-encabezado .foto-circular {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255,255,255,0.85);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.perfil-encabezado .datos {
+  flex: 1;
+  min-width: 200px;
+}
+
+.perfil-encabezado .datos h2 {
+  font-size: 2em;
+  margin: 0 0 0.3em 0;
+  color: inherit;
+  line-height: 1.1;
+}
+
+.perfil-encabezado .datos .condicion {
   display: inline-block;
-  background: rgba(0,0,0,0.1);
-  padding: 0.3em 0.8em;
+  background: rgba(0,0,0,0.15);
+  padding: 0.4em 1em;
   border-radius: 20px;
-  font-size: 0.9em;
-  margin-bottom: 1em;
+  font-size: 0.95em;
+  font-weight: 600;
 }
 
+/* Detalle del perfil */
 #perfilContenido .detalle {
   line-height: 1.6;
   font-size: 1em;
@@ -114,16 +152,11 @@ section h2 {
   display: block;
   margin-top: 1em;
   font-size: 1.05em;
-  color: #0057b8;
+  color: inherit;
+  opacity: 0.95;
 }
 
-#perfilContenido img.foto {
-  max-width: 200px;
-  border-radius: 12px;
-  margin: 1em 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
+/* Botones */
 #perfilContenido button {
   background: #0057b8;
   color: white;
@@ -134,23 +167,32 @@ section h2 {
   cursor: pointer;
   margin-right: 0.5em;
   margin-top: 0.5em;
+  transition: background 0.2s ease;
 }
 
 #perfilContenido button:hover {
   background: #004099;
 }
 
+/* Ruta visual */
 #rutaVisual {
   margin-top: 1.5em;
+}
+
+#rutaVisual h3 {
+  margin-bottom: 0.5em;
+  color: inherit;
 }
 
 #rutaVisual img {
   max-width: 100%;
   border-radius: 12px;
-  border: 2px solid #0057b8;
+  border: 2px solid rgba(0,0,0,0.2);
 }
 
-/* Footer */
+/* ============================================================
+   Footer
+   ============================================================ */
 footer {
   text-align: center;
   padding: 1em;
@@ -158,7 +200,9 @@ footer {
   font-size: 0.85em;
 }
 
-/* Responsive */
+/* ============================================================
+   Responsive: en pantallas pequeñas
+   ============================================================ */
 @media (max-width: 600px) {
   main {
     padding: 1em;
@@ -167,6 +211,21 @@ footer {
     padding: 1.5em;
   }
   header h1 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 500px) {
+  .perfil-encabezado {
+    flex-direction: column;
+    text-align: center;
+    gap: 1em;
+  }
+  .perfil-encabezado .foto-circular {
+    width: 100px;
+    height: 100px;
+  }
+  .perfil-encabezado .datos h2 {
     font-size: 1.5em;
   }
 }
