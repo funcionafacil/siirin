@@ -5,7 +5,7 @@
 
 // Configuración
 const URL_WORKER = "https://siriin-api.hfhoyos.workers.dev";
-const API_KEY = "Lamasfacil1971$"; // ⚠️ Reemplaza con tu API_KEY real
+const API_KEY = "Lamasfacil1971$"; // ⚠️ Reemplaza esto con tu API_KEY real
 const DISPOSITIVO = "kiosco-entrada";
 
 // Colores por condición
@@ -35,6 +35,19 @@ let vozActiva = false;
 let vocesDisponibles = [];
 
 // ============================================================
+// Limpiar código escaneado (quitar caracteres invisibles)
+// ============================================================
+function limpiarCodigo(texto) {
+  if (!texto) return "";
+  return texto
+    .toString()
+    .replace(/[\r\n\t]/g, "") // quitar saltos de línea y tabulaciones
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // quitar caracteres invisibles (zero-width)
+    .trim() // quitar espacios al inicio y al final
+    .toUpperCase(); // unificar en mayúsculas
+}
+
+// ============================================================
 // Iniciar el escáner QR
 // ============================================================
 function iniciarEscaner() {
@@ -51,24 +64,29 @@ function iniciarEscaner() {
 // Callback: QR leído exitosamente
 // ============================================================
 async function onScanSuccess(decodedText) {
+  // Limpiar el texto leído
+  const codigoLimpio = limpiarCodigo(decodedText);
   const ahora = Date.now();
-  if (decodedText === ultimoCodigoEscaneado && (ahora - tiempoUltimoEscaneo) < TIEMPO_BLOQUEO) {
+
+  // Evitar procesar el mismo código dos veces seguidas
+  if (codigoLimpio === ultimoCodigoEscaneado && (ahora - tiempoUltimoEscaneo) < TIEMPO_BLOQUEO) {
     return;
   }
 
-  ultimoCodigoEscaneado = decodedText;
+  ultimoCodigoEscaneado = codigoLimpio;
   tiempoUltimoEscaneo = ahora;
 
   // Detener cualquier voz previa
   detenerVoz();
 
-  mostrarEstado("Buscando perfil...", "");
+  // Mostrar información de diagnóstico en el estado
+  mostrarEstado("Código leído: [" + codigoLimpio + "] (longitud: " + codigoLimpio.length + ")", "");
 
   try {
-    const perfil = await obtenerPerfil(decodedText);
+    const perfil = await obtenerPerfil(codigoLimpio);
 
     if (!perfil) {
-      mostrarEstado("Código no reconocido: " + decodedText, "error");
+      mostrarEstado("Código no reconocido: " + codigoLimpio, "error");
       return;
     }
 
@@ -82,7 +100,7 @@ async function onScanSuccess(decodedText) {
 
   } catch (error) {
     console.error("Error:", error);
-    mostrarEstado("Error al procesar el código", "error");
+    mostrarEstado("Error al procesar el código: " + error.message, "error");
   }
 }
 
@@ -94,17 +112,23 @@ function onScanError(error) {
 // Consultar el Worker
 // ============================================================
 async function obtenerPerfil(codigo) {
+  // Asegurarnos de enviar el código limpio
+  const codigoLimpio = limpiarCodigo(codigo);
+
   const respuesta = await fetch(URL_WORKER + "/api/perfil", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-API-Key": API_KEY,
     },
-    body: JSON.stringify({ codigo: codigo }),
+    body: JSON.stringify({ codigo: codigoLimpio }),
   });
 
   const datos = await respuesta.json();
-  if (!datos.exito) return null;
+  if (!datos.exito) {
+    console.warn("Worker respondió:", datos);
+    return null;
+  }
   return datos.perfil;
 }
 
@@ -186,21 +210,19 @@ function generarBotonVoz(perfil) {
   const tipoVoz = (perfil.voz || "").toLowerCase().trim();
   const tieneTexto = (perfil.textoVoz || "").trim().length > 0;
 
-  // Si no hay texto o la voz está desactivada, no mostrar nada
   if (!tieneTexto || tipoVoz === "desactivada") {
     return "";
   }
 
-  // Si es "opcional", botón discreto
+  const textoEscapado = escapeTexto(perfil.textoVoz);
+
   if (tipoVoz === "opcional") {
-    return `<button class="boton-voz discreto" id="btnVoz" onclick="toggleVoz('${escapeTexto(perfil.textoVoz)}')">🔊 Escuchar</button>`;
+    return `<button class="boton-voz discreto" id="btnVoz" onclick="toggleVoz('${textoEscapado}')">🔊 Escuchar</button>`;
   }
 
-  // Si es "obligatoria" o "informativa", botón verde normal
-  return `<button class="boton-voz" id="btnVoz" onclick="toggleVoz('${escapeTexto(perfil.textoVoz)}')">🔊 Escuchar</button>`;
+  return `<button class="boton-voz" id="btnVoz" onclick="toggleVoz('${textoEscapado}')">🔊 Escuchar</button>`;
 }
 
-// Escapar texto para meterlo en un onclick (comillas y saltos)
 function escapeTexto(texto) {
   return texto
     .replace(/\\/g, "\\\\")
@@ -210,7 +232,7 @@ function escapeTexto(texto) {
 }
 
 // ============================================================
-// Manejo de voz automática según condición
+// Voz automática según condición
 // ============================================================
 function manejarVozAutomatica(perfil) {
   const tipoVoz = (perfil.voz || "").toLowerCase().trim();
@@ -218,9 +240,7 @@ function manejarVozAutomatica(perfil) {
 
   if (!tieneTexto) return;
 
-  // Solo "obligatoria" arranca automáticamente
   if (tipoVoz === "obligatoria") {
-    // Pequeña espera para que el navegador procese el DOM
     setTimeout(() => {
       leerTexto(perfil.textoVoz);
     }, 500);
@@ -228,7 +248,7 @@ function manejarVozAutomatica(perfil) {
 }
 
 // ============================================================
-// Activar / desactivar voz manualmente (botón)
+// Activar / desactivar voz manualmente
 // ============================================================
 function toggleVoz(texto) {
   if (vozActiva) {
@@ -247,16 +267,14 @@ function leerTexto(texto) {
     return;
   }
 
-  // Cancelar cualquier lectura previa
   window.speechSynthesis.cancel();
 
   vozInstancia = new SpeechSynthesisUtterance(texto);
   vozInstancia.lang = "es-ES";
-  vozInstancia.rate = 0.85;  // Velocidad pausada
+  vozInstancia.rate = 0.85;
   vozInstancia.pitch = 1.0;
   vozInstancia.volume = 1.0;
 
-  // Buscar una voz en español
   if (vocesDisponibles.length === 0) {
     vocesDisponibles = window.speechSynthesis.getVoices();
   }
@@ -385,7 +403,6 @@ function mostrarEstado(mensaje, clase) {
 // Iniciar app
 // ============================================================
 window.addEventListener("DOMContentLoaded", () => {
-  // Cargar voces del sistema
   if ("speechSynthesis" in window) {
     vocesDisponibles = window.speechSynthesis.getVoices();
     window.speechSynthesis.onvoiceschanged = () => {
