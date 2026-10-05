@@ -5,7 +5,7 @@
 
 // Configuración
 const URL_WORKER = "https://siriin-api.hfhoyos.workers.dev";
-const API_KEY = "TU_API_KEY_AQUI"; // ⚠️ Reemplaza con tu API_KEY real
+const API_KEY = "Lamasfacil1971$"; // ⚠️ Reemplaza con tu API_KEY real
 const DISPOSITIVO = "kiosco-entrada";
 
 // Colores por condición
