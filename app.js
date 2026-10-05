@@ -5,7 +5,7 @@
 
 // Configuración
 const URL_WORKER = "https://siriin-api.hfhoyos.workers.dev";
-const API_KEY = "Lamasfacil1971$"; // ⚠️ Reemplaza esto con tu API_KEY
+const API_KEY = "Lamasfacil1971$"; // ⚠️ Reemplaza esto con tu API_KEY real
 const DISPOSITIVO = "kiosco-entrada"; // Identificador de este dispositivo
 
 // Colores por condición (para el fondo del perfil)
@@ -22,9 +22,13 @@ const COLORES_POR_CONDICION = {
   "Persona con hipoacusia": "#39CCCC"
 };
 
+// Colores de fondo claros (para decidir si el texto va en negro)
+const FONDOS_CLAROS = ["#FFDC00", "#FF851B", "#7FDBFF", "#39CCCC", "#2ECC40"];
+
 // Estado global
 let ultimoCodigoEscaneado = null;
-let escaneoActivo = true;
+let tiempoUltimoEscaneo = 0;
+const TIEMPO_BLOQUEO = 5000; // 5 segundos para evitar escaneos repetidos
 
 // ============================================================
 // Iniciar el escáner QR
@@ -43,14 +47,15 @@ function iniciarEscaner() {
 // Callback: QR leído exitosamente
 // ============================================================
 async function onScanSuccess(decodedText) {
+  const ahora = Date.now();
+
   // Evitar procesar el mismo código dos veces seguidas
-  if (decodedText === ultimoCodigoEscaneado) {
+  if (decodedText === ultimoCodigoEscaneado && (ahora - tiempoUltimoEscaneo) < TIEMPO_BLOQUEO) {
     return;
   }
-  ultimoCodigoEscaneado = decodedText;
 
-  // Resetear el código después de 5 segundos para permitir volver a escanear
-  setTimeout(() => { ultimoCodigoEscaneado = null; }, 5000);
+  ultimoCodigoEscaneado = decodedText;
+  tiempoUltimoEscaneo = ahora;
 
   mostrarEstado("Buscando perfil...", "");
 
@@ -59,13 +64,13 @@ async function onScanSuccess(decodedText) {
     const perfil = await obtenerPerfil(decodedText);
 
     if (!perfil) {
-      mostrarEstado("Código no reconocido", "error");
+      mostrarEstado("Código no reconocido: " + decodedText, "error");
       return;
     }
 
     // 2. Mostrar el perfil en pantalla
     mostrarPerfil(perfil);
-    mostrarEstado("Perfil encontrado", "exito");
+    mostrarEstado("Perfil encontrado: " + perfil.nombre, "exito");
 
     // 3. Registrar el ingreso (en segundo plano)
     registrarIngreso(perfil);
@@ -140,17 +145,29 @@ function mostrarPerfil(perfil) {
   contenido.style.backgroundColor = color;
 
   // Determinar si el texto debe ser claro u oscuro según el fondo
-  const esFondoClaro = ["#FFDC00", "#FF851B", "#7FDBFF", "#39CCCC"].includes(color);
+  const esFondoClaro = FONDOS_CLAROS.includes(color);
   contenido.style.color = esFondoClaro ? "#000" : "#fff";
 
   // Formatear el detalle con subtítulos
   const detalleFormateado = formatearDetalle(perfil.detalle);
 
+  // Construir el HTML con encabezado tipo tarjeta
   contenido.innerHTML = `
-    <h2>${perfil.nombre}</h2>
-    <span class="condicion">${perfil.condicion}</span>
+    <div class="perfil-encabezado">
+      <img
+        class="foto-circular"
+        src="${perfil.foto}"
+        alt="Foto de ${perfil.nombre}"
+        onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23dddddd%22/><text x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23999999%22>?</text></svg>';"
+      >
+      <div class="datos">
+        <h2>${perfil.nombre}</h2>
+        <span class="condicion">${perfil.condicion}</span>
+      </div>
+    </div>
+
     <div class="detalle">${detalleFormateado}</div>
-    <img class="foto" src="${perfil.foto}" alt="Foto de ${perfil.nombre}" onerror="this.style.display='none'">
+
     <div>
       <button onclick="toggleRuta('${perfil.ruta}')">📍 Ver ruta inclusiva</button>
       <button onclick="ocultarPerfil()">✖ Cerrar</button>
@@ -179,8 +196,9 @@ function formatearDetalle(texto) {
   let resultado = texto;
 
   subtitulos.forEach((titulo) => {
-    // Buscar el título en cualquier parte del texto y envolverlo en <strong>
-    const regex = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
+    // Escapar caracteres especiales de regex
+    const tituloEscapado = titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(tituloEscapado, "g");
     resultado = resultado.replace(regex, `<br><strong>${titulo}</strong><br>`);
   });
 
